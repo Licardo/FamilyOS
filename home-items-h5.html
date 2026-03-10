@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>家庭生活物品记录</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f6f1;
+      --surface: #ffffffcc;
+      --card: #fffdfa;
+      --text: #1f2a2a;
+      --sub: #51605f;
+      --line: #d9ded8;
+      --brand: #0f766e;
+      --brand-2: #ef7a38;
+      --ok: #2d8a45;
+      --warn: #cc5f00;
+      --danger: #b42318;
+      --shadow: 0 14px 40px rgba(16, 30, 28, 0.08);
+      --r: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "Noto Sans SC", sans-serif; }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: .55;
+      pointer-events: none;
+    }
+    body::before {
+      width: 220px; height: 220px; left: -40px; top: -40px;
+      background: radial-gradient(circle, #8bdccf 0%, transparent 70%);
+    }
+    body::after {
+      width: 250px; height: 250px; right: -70px; top: 120px;
+      background: radial-gradient(circle, #ffd1ae 0%, transparent 70%);
+    }
+
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      padding: max(env(safe-area-inset-top), 18px) 14px max(env(safe-area-inset-bottom), 18px);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f766e, #17958b 54%, #ff9d6c);
+      border-radius: 24px;
+      padding: 16px;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transform: translateY(8px);
+      opacity: 0;
+      animation: rise .45s ease-out forwards;
+    }
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .title {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 24px;
+      letter-spacing: .2px;
+    }
+    .sub {
+      margin: 8px 0 0;
+      color: #ecfff9;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .panel {
+      margin-top: 12px;
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid #ffffff8f;
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid #eceee9;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .stat b {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 24px;
+      line-height: 1;
+    }
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .toolbar {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    input, select, button {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      font-size: 15px;
+      font-family: inherit;
+    }
+    input, select {
+      width: 100%;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+    }
+    input:focus, select:focus, button:focus-visible {
+      outline: 2px solid #0f766e66;
+      outline-offset: 1px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      min-height: 40px;
+      border-radius: 999px;
+      padding: 0 14px;
+      background: #f2f4f0;
+      color: #2b3736;
+      border: 1px solid #d8ddd7;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .chip:active { transform: scale(.98); }
+    .chip.active {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+    }
+
+    .create {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1.6fr 1fr .9fr;
+    }
+    .create button {
+      border: none;
+      background: linear-gradient(135deg, #0f766e, #0e9386);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, filter .2s ease;
+    }
+    .create button:active { transform: scale(.98); }
+    .create button:hover { filter: brightness(1.04); }
+
+    .list {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .item {
+      background: #fff;
+      border: 1px solid #e7ebe5;
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      animation: rise .28s ease-out;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .name {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .meta {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--sub);
+    }
+    .badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .ok { background: #def4e2; color: var(--ok); }
+    .warn { background: #ffe6cf; color: var(--warn); }
+    .danger { background: #ffe1dd; color: var(--danger); }
+
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      min-height: 38px;
+      min-width: 76px;
+      border: 1px solid #d6ddd6;
+      background: #f9fbf8;
+      color: #223231;
+      padding: 0 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn[disabled] { opacity: .45; cursor: not-allowed; }
+    .btn.danger-btn { border-color: #f0c2bc; color: #992e23; background: #fff4f2; }
+
+    .empty {
+      border: 1px dashed #b8c5bf;
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      color: var(--sub);
+      background: #f4f8f5;
+    }
+    .hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #4b5e5b;
+      background: #eef8f5;
+      border: 1px solid #cfe6de;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: 1fr; }
+      .create { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero" aria-label="页面标题">
+      <h1 class="title">家庭生活物品记录</h1>
+      <p class="sub">记录家里常用物品的数量、状态和位置，缺货时快速补充，避免重复购买。</p>
+    </section>
+
+    <section class="panel" aria-label="数据概览">
+      <div class="stats">
+        <div class="stat"><b id="countAll">0</b><span>物品总数</span></div>
+        <div class="stat"><b id="countLow">0</b><span>待补货</span></div>
+        <div class="stat"><b id="countDone">0</b><span>已处理</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="新增与筛选">
+      <div class="toolbar">
+        <label>
+          <span style="font-size:13px;color:#3e4c4b;">搜索物品</span>
+          <input id="search" type="search" placeholder="例如：洗衣液、牙膏、纸巾" />
+        </label>
+
+        <div class="chips" id="chips" role="tablist" aria-label="分类筛选"></div>
+
+        <div class="create">
+          <label>
+            <span style="font-size:13px;color:#3e4c4b;">物品名</span>
+            <input id="name" placeholder="输入物品名称" />
+          </label>
+          <label>
+            <span style="font-size:13px;color:#3e4c4b;">分类</span>
+            <select id="category" aria-label="选择分类">
+              <option value="清洁">清洁</option>
+              <option value="厨房">厨房</option>
+              <option value="卫浴">卫浴</option>
+              <option value="卧室">卧室</option>
+              <option value="客厅">客厅</option>
+              <option value="其他">其他</option>
+            </select>
+          </label>
+          <button id="addBtn" type="button" aria-label="新增物品">新增</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="list" id="list" aria-live="polite" aria-label="物品列表"></section>
+    <p class="hint" id="dataSourceHint"></p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "home-items-v1";
+    const API_BASE = "";
+    const USE_NOTION = true;
+    const categories = ["全部", "清洁", "厨房", "卫浴", "卧室", "客厅", "其他"];
+    const now = () => new Date().toLocaleString("zh-CN", { hour12: false });
+
+    let filter = "全部";
+    let keyword = "";
+    let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || [
+      { id: crypto.randomUUID(), name: "洗衣液", category: "清洁", status: "待补货", location: "阳台柜", updatedAt: now() },
+      { id: crypto.randomUUID(), name: "抽纸", category: "客厅", status: "正常", location: "电视柜", updatedAt: now() },
+      { id: crypto.randomUUID(), name: "牙膏", category: "卫浴", status: "待补货", location: "洗手台", updatedAt: now() }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const listEl = $("list");
+    const chipsEl = $("chips");
+    const searchEl = $("search");
+    const nameEl = $("name");
+    const categoryEl = $("category");
+    const addBtn = $("addBtn");
+    const dataSourceHint = $("dataSourceHint");
+
+    function persistLocal() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    const localDb = {
+      async list() { return items; },
+      async create(payload) {
+        const record = { id: crypto.randomUUID(), ...payload };
+        items.unshift(record);
+        persistLocal();
+        return record;
+      },
+      async update(id, payload) {
+        items = items.map((i) => i.id === id ? { ...i, ...payload } : i);
+        persistLocal();
+      },
+      async remove(id) {
+        items = items.filter((i) => i.id !== id);
+        persistLocal();
+      }
+    };
+
+    const notionDb = {
+      async list() {
+        const res = await fetch(`${API_BASE}/api/items`);
+        if (!res.ok) throw new Error("notion_list_failed");
+        return res.json();
+      },
+      async create(payload) {
+        const res = await fetch(`${API_BASE}/api/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("notion_create_failed");
+        return res.json();
+      },
+      async update(id, payload) {
+        const res = await fetch(`${API_BASE}/api/items/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("notion_update_failed");
+      },
+      async remove(id) {
+        const res = await fetch(`${API_BASE}/api/items/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("notion_delete_failed");
+      }
+    };
+
+    let db = localDb;
+
+    async function detectDataSource() {
+      if (!USE_NOTION) {
+        dataSourceHint.textContent = "当前数据源：本地存储（localStorage）";
+        return;
+      }
+      try {
+        await fetch(`${API_BASE}/health`);
+        db = notionDb;
+        dataSourceHint.textContent = "当前数据源：Notion Database（通过本地代理）";
+      } catch {
+        db = localDb;
+        dataSourceHint.textContent = "未连接到 Notion 代理，已回退到本地存储。";
+      }
+    }
+
+    function statusClass(status) {
+      if (status === "正常") return "ok";
+      if (status === "待补货") return "warn";
+      return "danger";
+    }
+
+    function renderChips() {
+      chipsEl.innerHTML = categories.map((c) => `
+        <button type="button" class="chip ${filter === c ? "active" : ""}" data-filter="${c}" aria-pressed="${filter === c}">
+          ${c}
+        </button>
+      `).join("");
+      chipsEl.querySelectorAll(".chip").forEach((el) => {
+        el.addEventListener("click", () => {
+          filter = el.dataset.filter;
+          render();
+        });
+      });
+    }
+
+    function visibleItems() {
+      return items.filter((it) => {
+        const byFilter = filter === "全部" || it.category === filter;
+        const byKeyword = !keyword || it.name.includes(keyword) || it.location.includes(keyword);
+        return byFilter && byKeyword;
+      });
+    }
+
+    function renderStats() {
+      $("countAll").textContent = String(items.length);
+      $("countLow").textContent = String(items.filter(i => i.status === "待补货").length);
+      $("countDone").textContent = String(items.filter(i => i.status === "已处理").length);
+    }
+
+    function renderList() {
+      const list = visibleItems();
+      if (!list.length) {
+        listEl.innerHTML = '<div class="empty">暂无匹配物品，试试切换分类或新增一条记录。</div>';
+        return;
+      }
+      listEl.innerHTML = list.map((it) => `
+        <article class="item">
+          <div class="row">
+            <div>
+              <h2 class="name">${it.name}</h2>
+              <p class="meta">${it.category} · ${it.location} · 更新于 ${it.updatedAt}</p>
+            </div>
+            <span class="badge ${statusClass(it.status)}">${it.status}</span>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn" data-id="${it.id}" data-act="toggle">
+              ${it.status === "待补货" ? "标记正常" : it.status === "正常" ? "标记处理" : "重置状态"}
+            </button>
+            <button type="button" class="btn danger-btn" data-id="${it.id}" data-act="delete">删除</button>
+          </div>
+        </article>
+      `).join("");
+
+      listEl.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const current = items.find((i) => i.id === id);
+          if (!current) return;
+          if (btn.dataset.act === "delete") {
+            await db.remove(id);
+            items = items.filter((i) => i.id !== id);
+          } else {
+            const next = current.status === "待补货" ? "正常" : current.status === "正常" ? "已处理" : "待补货";
+            await db.update(id, { status: next, updatedAt: now() });
+            items = items.map((i) => i.id === id ? { ...i, status: next, updatedAt: now() } : i);
+          }
+          render();
+        });
+      });
+    }
+
+    function render() {
+      renderChips();
+      renderStats();
+      renderList();
+    }
+
+    addBtn.addEventListener("click", async () => {
+      const name = nameEl.value.trim();
+      if (!name) {
+        nameEl.focus();
+        return;
+      }
+      const newItem = {
+        name,
+        category: categoryEl.value,
+        status: "待补货",
+        location: "未设置",
+        updatedAt: now()
+      };
+      const created = await db.create(newItem);
+      items.unshift(created);
+      nameEl.value = "";
+      render();
+    });
+
+    searchEl.addEventListener("input", (e) => {
+      keyword = e.target.value.trim();
+      renderList();
+    });
+
+    (async function init() {
+      await detectDataSource();
+      try {
+        const remote = await db.list();
+        if (Array.isArray(remote) && remote.length) {
+          items = remote;
+        } else if (db === notionDb) {
+          items = [];
+        }
+      } catch {
+        db = localDb;
+        dataSourceHint.textContent = "Notion 读取失败，已回退到本地存储。";
+      }
+      render();
+    })();
+  </script>
+</body>
+</html>
