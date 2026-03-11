@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
       const payload = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
       const page = await notion("/pages", "POST", {
         parent: { database_id: NOTION_DATABASE_ID },
-        properties: mapToNotionProperties(payload),
+        properties: mapToNotionProperties(payload, { withDefaults: true }),
       });
       return send(res, 201, mapFromNotion(page));
     }

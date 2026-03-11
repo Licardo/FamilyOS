@@ -42,14 +42,31 @@ function mapFromNotion(page) {
   };
 }
 
-function mapToNotionProperties(item) {
-  return {
-    Name: { title: [{ text: { content: item.name || "未命名" } }] },
-    Category: { select: { name: item.category || "其他" } },
-    Status: { select: { name: item.status || "待补货" } },
-    Location: { rich_text: [{ text: { content: item.location || "未设置" } }] },
-    UpdatedAt: { rich_text: [{ text: { content: item.updatedAt || new Date().toISOString() } }] },
-  };
+function mapToNotionProperties(item, options = {}) {
+  const withDefaults = Boolean(options.withDefaults);
+  const properties = {};
+
+  if (item.name !== undefined || withDefaults) {
+    properties.Name = {
+      title: [{ text: { content: (item.name || "未命名").trim() || "未命名" } }],
+    };
+  }
+  if (item.category !== undefined || withDefaults) {
+    properties.Category = { select: { name: item.category || "其他" } };
+  }
+  if (item.status !== undefined || withDefaults) {
+    properties.Status = { select: { name: item.status || "待补货" } };
+  }
+  if (item.location !== undefined || withDefaults) {
+    properties.Location = { rich_text: [{ text: { content: item.location || "未设置" } }] };
+  }
+  if (item.updatedAt !== undefined || withDefaults) {
+    properties.UpdatedAt = {
+      rich_text: [{ text: { content: item.updatedAt || new Date().toISOString() } }],
+    };
+  }
+
+  return properties;
 }
 
 module.exports = {
